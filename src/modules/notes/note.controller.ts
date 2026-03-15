@@ -1,0 +1,80 @@
+import { Request, Response } from 'express'
+import * as noteService from './note.service'
+import { createNoteSchema, updateNoteSchema } from './note.validation';
+
+export const createNote = async (req: Request, res: Response) => {
+  try {
+    const validatedData = createNoteSchema.parse(req.body)
+
+    const note = await noteService.createNote(validatedData)
+
+    res.status(201).json({
+      success: true,
+      data: note
+    })
+  } catch (error: any) {
+       if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        errors: error.errors
+      })
+    }
+
+    console.error(error)
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create note'
+    })
+  }
+}
+
+export const getAllNotes = async (_req: Request, res: Response) => {
+  try {
+    const notes = await noteService.getAllNotes()
+    res.status(200).json({ success: true, data: notes })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ success: false, message: 'Failed to fetch notes' })
+  }
+}
+
+export const getNoteById = async (req: Request, res: Response) => {
+  try {
+    const note = await noteService.getNoteById(Number(req.params.id))
+    if (!note) return res.status(404).json({ success: false, message: 'Note not found' })
+    res.status(200).json({ success: true, data: note })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ success: false, message: 'Failed to fetch note' })
+  }
+}
+
+export const updateNote = async (req: Request, res: Response) => {
+  try {
+    const validatedData = updateNoteSchema.parse(req.body)
+    const note = await noteService.updateNote(Number(req.params.id), validatedData)
+    if (!note) return res.status(404).json({ success: false, message: 'Note not found' })
+    res.status(200).json({ success: true, data: note })
+  } catch (error: any) {
+     if (error.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        errors: error.errors
+      })
+    }
+    console.error(error)
+    console.error(error)
+    res.status(500).json({ success: false, message: 'Failed to update note' })
+  }
+}
+
+export const deleteNote = async (req: Request, res: Response) => {
+  try {
+    const deleted = await noteService.deleteNote(Number(req.params.id))
+    if (!deleted) return res.status(404).json({ success: false, message: 'Note not found' })
+    res.status(200).json({ success: true, message: 'Note deleted successfully' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ success: false, message: 'Failed to delete note' })
+  }
+}
