@@ -1,19 +1,22 @@
-import express from 'express'
-import dotenv from 'dotenv'
-import noteRoutes from './modules/notes/note.routes'
+import express from "express";
+import dotenv from "dotenv";
+import noteRoutes from "./modules/notes/note.routes";
+import { errorMiddleware } from "./middlewares/error.middleware";
 
-dotenv.config()
+dotenv.config();
 
-const app = express()
+const app = express();
 
 // Global middlewares
-app.use(express.json())
+app.use(express.json());
 
 // Health check
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok' })
-})
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
-app.use('/notes', noteRoutes)
+app.use("/notes", noteRoutes);
 
-export default app
+app.use(errorMiddleware);
+
+export default app;
